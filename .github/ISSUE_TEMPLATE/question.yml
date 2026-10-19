@@ -1,0 +1,52 @@
+name: Question or product clarification
+description: Ask about unclear behavior or a missing requirement, without claiming a defect.
+title: "[Question]: "
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form when the expected behavior is not documented or is ambiguous. Examples: password recovery, account provisioning, policy visibility, or an unclear business rule. No severity is needed.
+
+        **Evidence:** Do not include credentials, tokens, cookies, authorization headers or sensitive application data in any field or attachment. Redact them first.
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: State the question in one or two sentences.
+    validations:
+      required: true
+  - type: input
+    id: affected-area
+    attributes:
+      label: Affected area
+      description: The page, workflow or feature the question is about.
+    validations:
+      required: true
+  - type: textarea
+    id: observed
+    attributes:
+      label: Observed behavior
+      description: What the application does today. Include exact messages where relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: missing
+    attributes:
+      label: Missing requirement or decision
+      description: What rule, specification or decision would answer the question.
+    validations:
+      required: true
+  - type: textarea
+    id: importance
+    attributes:
+      label: Why the clarification matters
+      description: What depends on the answer, such as test expectations, user impact or risk.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting evidence
+      description: Optional. Attach sanitized screenshots or notes. Drag files into this box. Add them only when they help.
