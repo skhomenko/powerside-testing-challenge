@@ -1,0 +1,120 @@
+name: Bug report
+description: Report a confirmed application defect with steps to reproduce.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for behavior you have reproduced and believe is a defect. If the intended behavior is unclear, use the **Question or product clarification** form instead.
+
+        **Evidence:** Do not include credentials, tokens, cookies, authorization headers or sensitive application data in any field or attachment. Redact them first.
+
+        **Severity and priority are separate.** Severity describes the impact of the defect. Priority is decided by the team. Choosing a severity here does not apply any label or set a priority.
+  - type: input
+    id: qa-reference
+    attributes:
+      label: QA reference
+      description: Optional internal reference, if one exists.
+      placeholder: QA-007
+  - type: input
+    id: affected-area
+    attributes:
+      label: Affected page or workflow
+      description: Where the defect appears.
+      placeholder: Login page, or "Create customer" workflow
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include browser and version, viewport size and timezone when they are relevant. Add the application URL or build if known.
+      placeholder: |
+        Browser:
+        Viewport:
+        Timezone:
+        Application URL or build:
+    validations:
+      required: true
+  - type: textarea
+    id: preconditions
+    attributes:
+      label: Preconditions
+      description: Required state before the first step, such as the account role or existing data. Do not include passwords.
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to ...
+        2. Click ...
+        3. Enter ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should happen, and the source of that expectation if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happens instead. Include exact error text.
+    validations:
+      required: true
+  - type: dropdown
+    id: reproducibility
+    attributes:
+      label: Reproducibility
+      options:
+        - Always
+        - Intermittent
+        - Once
+        - Not retried
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Business impact and workaround
+      description: Who is affected, what they cannot do, and whether a workaround exists.
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: |
+        Critical: data loss, security exposure, or a core workflow is blocked with no workaround.
+        Major: a core workflow is impaired, or it is blocked but a workaround exists.
+        Minor: a limited or non-core problem.
+        Trivial: cosmetic, with no effect on the task.
+        Not assessed: the impact is not yet judged.
+      options:
+        - Not assessed
+        - Critical
+        - Major
+        - Minor
+        - Trivial
+    validations:
+      required: true
+  - type: textarea
+    id: severity-justification
+    attributes:
+      label: Severity justification
+      description: Why you chose this severity. Optional when the severity is Not assessed.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Optional. Attach sanitized screenshots, console or network excerpts, or response bodies. Drag files into this box. Add them only when they help.
+  - type: textarea
+    id: suspected-cause
+    attributes:
+      label: Suspected cause
+      description: Optional. Keep this separate from the observed facts above. Mark it as a hypothesis.

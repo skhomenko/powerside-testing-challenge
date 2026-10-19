@@ -1,0 +1,56 @@
+name: Feature request or improvement
+description: Propose a change that would improve a workflow.
+title: "[Improvement]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for a proposed improvement or missing capability. If the intended scope is unknown, do not present the gap as a defect. Describe what you observed and use the **Question or product clarification** form if the requirement itself is unclear.
+
+        **Evidence:** Do not include credentials, tokens, cookies, authorization headers or sensitive application data in any field or attachment. Redact them first.
+  - type: input
+    id: qa-reference
+    attributes:
+      label: QA reference
+      description: Optional internal reference, if one exists.
+      placeholder: QA-007
+  - type: textarea
+    id: problem
+    attributes:
+      label: User problem and affected workflow
+      description: Who is affected, what they are trying to do, and what gets in the way.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed improvement
+      description: What should change. Describe the outcome, not the implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: benefit
+    attributes:
+      label: Expected benefit
+      description: Optional. The value this brings to users or to the business.
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance criteria
+      description: Observable conditions that show the improvement works.
+      placeholder: |
+        - Given ..., when ..., then ...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and workaround
+      description: Optional. Other options considered, and how users cope today.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Supporting evidence
+      description: Optional. Attach sanitized screenshots or notes. Drag files into this box. Add them only when they help.
