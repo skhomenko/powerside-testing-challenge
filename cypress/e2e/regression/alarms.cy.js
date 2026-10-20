@@ -70,7 +70,7 @@ describe('TC-05 | Alarms [Regression]', () => {
     alarms.visit();
     actAndWaitForList(path, { status: 'Resolved' }, () => select('alarm-status-filter', 'Resolved')).then(body => {
       if (!body.events.length) throw new Error('DATA BLOCKER: require a resolved alarm for details.');
-      alarms.assertActions('Resolved');
+      alarms.assertActions('Resolved', body.events);
       alarms.expand(body.events[0]);
       cy.get('[data-cy="expand-row"][aria-expanded="true"]').click().should('have.attr', 'aria-expanded', 'false');
       cy.get('[data-cy="alarm-detail"]').should('not.exist');
@@ -150,7 +150,7 @@ describe('TC-05 | Alarms [Regression]', () => {
         if (!body.events.length) throw new Error(`DATA BLOCKER: no ${status} alarm available for the action matrix.`);
         expect(body.events.every(row => row.status === status)).to.eq(true);
         alarms.assertRecords(body.events);
-        alarms.assertActions(status);
+        alarms.assertActions(status, body.events);
       });
     });
   });
