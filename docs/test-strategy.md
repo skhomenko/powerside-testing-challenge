@@ -68,6 +68,10 @@ Select data by relevant properties rather than historical counts, timestamps or 
 
 ## Deferred coverage
 
+Automated tests are verified in Chrome only. Once the supported browsers are
+confirmed, extend Smoke coverage to a second browser before expanding the full
+regression suite.
+
 Contract tests are deferred because no API schema has been supplied or verified. Confirm the expected contracts before adding compatibility checks.
 
 Load tests are deferred because an isolated environment, authorization and performance targets have not been established. Lightweight timings during exploration can provide an initial baseline.

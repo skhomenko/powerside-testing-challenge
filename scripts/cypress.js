@@ -2,7 +2,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 if (Number(process.versions.node.split('.')[0]) !== 24) {
-  console.error('CONFIGURATION BLOCKER: use Node 24.x as specified in .nvmrc.');
+  console.error(`CONFIGURATION BLOCKER: Node 24.x is required; detected ${process.version}.`);
+  console.error('With nvm: run "nvm install" and "nvm use", then retry. Otherwise install Node 24.x.');
+  console.error('Or use Docker without host Node: "sh scripts/docker.sh build", then "sh scripts/docker.sh smoke" (or regression).');
   process.exit(2);
 }
 
