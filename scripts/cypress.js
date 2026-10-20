@@ -43,7 +43,7 @@ const cypress = require('cypress');
   fs.mkdirSync(directory, { recursive: true });
   // Replace only this group's generated reports, preserving other runs.
   for (const file of fs.readdirSync(directory)) {
-    if (/^(junit-.*\.xml|summary\.json)$/.test(file)) fs.unlinkSync(path.join(directory, file));
+    if (/^(junit-.*\.xml|summary\.json|reports-ready)$/.test(file)) fs.unlinkSync(path.join(directory, file));
   }
   const result = await cypress.run({
     e2e: true,
@@ -84,6 +84,8 @@ const cypress = require('cypress');
     fs.writeFileSync(report, redact(fs.readFileSync(report, 'utf8')), { mode: 0o600 });
     fs.chmodSync(report, 0o600);
   }
+  // CI may upload reports only after all credential redaction has completed.
+  fs.writeFileSync(path.join(directory, 'reports-ready'), '', { mode: 0o600 });
   for (const test of summary.specs.flatMap(spec => spec.tests).filter(test => test.state !== 'passed')) {
     console.error(redact(`${test.classification || test.state}: ${test.title}\n${test.failure || 'No completed result.'}`));
   }

@@ -1,0 +1,22 @@
+# Allow only files needed to build and execute the test runner.
+**
+!Dockerfile
+!.dockerignore
+!package.json
+!package-lock.json
+!cypress.config.js
+!scripts/
+!scripts/**
+!cypress/
+!cypress/**
+
+# Exclude private or generated files even inside the allowed directories.
+**/.env*
+**/node_modules
+**/results
+**/*.log
+**/*.pem
+**/*.key
+cypress/screenshots
+cypress/videos
+cypress/downloads
