@@ -96,6 +96,5 @@ A non-passing run returns a nonzero exit code.
 The date tests currently reproduce known application defects
 [#8](https://github.com/skhomenko/powerside-testing-challenge/issues/8) and
 [#17](https://github.com/skhomenko/powerside-testing-challenge/issues/17).
-The summary distinguishes these from data or environment blockers and failures
-that need investigation. If startup fails without a summary, check the console
-output. Inspect reports before sharing them outside the project.
+Check `summary.json` for failure details. If the tests fail to start, check the
+terminal output.
