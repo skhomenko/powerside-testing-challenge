@@ -17,11 +17,43 @@ The tables summarize manual findings and automated verification. See
 [test cases](test-cases.md) for scope and the [README](../README.md#results-and-known-failures)
 for generated reports.
 
+## Product assessment
+
+I like the path from Dashboard to a device and its events. Sampled links opened
+the right records. The event details showed the same values as the list, and
+API checks reconciled the Dashboard counts. This gives users a useful starting
+point for investigation.
+
+Date filtering is the main weakness. `From` can include the previous day, and `To`
+can omit late-evening records. I would fix these first because they can make an
+investigation misleading or incomplete. Keyboard access to list records comes
+next. Some controls work with the keyboard, but the checked rows cannot be
+opened without a mouse. The event category and the label below the harmonic
+chart are cut off.
+
+Show a clear message when `From` is later than `To`, and add a Devices clear-all
+action. These are improvements, not confirmed requirement failures. First and
+Last page buttons would reduce repeated navigation. Letting View all open in a
+new tab would keep the device page available while investigating events.
+Show password would help users check their typing, a Help link would provide
+instructions, and remembering which release notes a user has read would avoid
+repeated interruptions. Mobile support and account access remain
+[open questions](https://github.com/skhomenko/powerside-testing-challenge/issues?q=is%3Aissue%20label%3Aquestion).
+
+Access, data consistency and finding the right records drove the testing
+priorities. Repeatable browser workflows suited automation. API checks added
+independent access and data checks. Usability and unclear behavior needed
+exploration. Settings, alarm actions and longer sessions remain partly tested,
+with safe setup, cleanup and expectations still limiting coverage.
+
 ## Manual observations
 
 ### TC-01: Login and logout
 
-**Observed:** Required fields, invalid-login recovery, reload and sampled logout navigation worked. Direct device and Alarms URLs returned to Login.
+**Observed:** Required fields, reload and sampled logout navigation worked.
+Direct device and Alarms URLs returned to Login. Recovery after invalid
+credentials worked during earlier exploration; that attempt was not repeated
+during targeted discovery because the account lockout policy remains unconfirmed.
 
 **Not covered yet:** A complete rerun of this case with controlled test data.
 
@@ -104,16 +136,20 @@ to investigate filter combinations, record identity and the known date defects.
 All six Regression failures are Alarms/Events From, To and same-day boundary
 checks linked to [#8](https://github.com/skhomenko/powerside-testing-challenge/issues/8)
 and [#17](https://github.com/skhomenko/powerside-testing-challenge/issues/17).
-The assertions remain enabled. No new application failures were observed.
-API coverage was verified locally and in Docker; hosted API execution remains
-unverified. See [automated coverage](test-cases.md#automated-coverage) for the
-scenarios and their purpose.
+For this challenge, the assertions remain enabled to check intended behavior
+and reproduce the reported defects. None were skipped or treated as successes;
+the run returns a nonzero exit code. Full Regression in CI also recorded
+51 passed and these 6 failures, with no pending or skipped tests. All other
+Regression tests, including the API checks, passed. See
+[automated coverage](test-cases.md#automated-coverage) for the scenarios and
+their purpose.
 
 ## Security assessment and limits
 
-No actionable security issue was found in the automation changes. Role comparisons
-and formal API contract coverage remain unverified. Test safeguards are described
-in the [strategy](test-strategy.md#automated-scope-and-limits).
+Security checks covered protected API access and client logout using the supplied
+Operator account. Role comparisons, server-side session revocation and formal API
+contract coverage remain unverified. Test safeguards are described in the
+[strategy](test-strategy.md#automated-scope-and-limits).
 
 ### Session revocation
 
