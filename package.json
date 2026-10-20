@@ -1,0 +1,19 @@
+{
+  "name": "powerside-testing-challenge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Read-only browser coverage for Power Quality Monitor",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "cy:open": "node scripts/cypress.js open",
+    "test:smoke": "node scripts/cypress.js smoke",
+    "test:regression": "node scripts/cypress.js regression",
+    "test:spec": "node scripts/cypress.js spec",
+    "check": "node scripts/check.js"
+  },
+  "devDependencies": {
+    "cypress": "16.2.0"
+  }
+}

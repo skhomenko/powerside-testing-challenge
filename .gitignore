@@ -4,3 +4,13 @@
 .private/
 /AGENTS.md
 /docs/exploration/
+
+node_modules/
+results/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+cypress.env.json
+npm-debug.log*
+
+.DS_Store

@@ -1,21 +1,20 @@
-# Test cases and results
+# Test cases
 
-Manual checks were performed on 19 October 2026 using an Operator account at [Power Quality Monitor](https://testapp.andresfloresv.com). Recorded viewports were 1440 x 900, 390 x 844 and 320 x 568. The harmonic-label check also used 1690 x 900.
+This document defines the regression suite, its Smoke subset, and the manual
+cases and exploratory coverage. Execution records are separate: see the
+[manual test report](manual-test-report.md) and the automated report locations
+in the [README](../README.md#run-the-tests).
 
-TC-02 was rerun on the same date at 1280 x 720.
+## Browser regression cases
 
-## Automation candidates
-
-These are proposed browser E2E tests.
-
-| ID | Case | Priority | Groups | Manual result |
-| --- | --- | --- | --- | --- |
-| TC-01 | Login and logout | High | Smoke, Regression | Partly run |
-| TC-02 | Dashboard loading and device link | High | Smoke, Regression | Passed, one device link sampled |
-| TC-03 | Device search, filters and pagination | Medium | Regression | Partly run |
-| TC-04 | Events and device links | High | Regression | Partly run |
-| TC-05 | Alarm filters and details | High | Regression | Partly run |
-| TC-06 | From and To dates | High | Regression | Failed: [To](https://github.com/skhomenko/powerside-testing-challenge/issues/8), [From](https://github.com/skhomenko/powerside-testing-challenge/issues/17) |
+| ID | Case | Priority | Groups |
+| --- | --- | --- | --- |
+| TC-01 | Login and logout | High | Smoke, Regression |
+| TC-02 | Dashboard loading and device link | High | Smoke, Regression |
+| TC-03 | Device search, filters and pagination | Medium | Smoke (page load), Regression |
+| TC-04 | Events and device links | High | Smoke (page load), Regression |
+| TC-05 | Alarm filters and details | High | Smoke (page load), Regression |
+| TC-06 | From and To dates | High | Regression |
 
 ### TC-01: Login and logout
 
@@ -27,10 +26,6 @@ These are proposed browser E2E tests.
 
 **Expected:** Missing fields prevent submission. Invalid credentials produce a general error and allow retry. Valid login opens Dashboard and remains valid after reload. After logout, protected pages return to Login without records.
 
-**Execution:** Required fields, invalid-login recovery, reload and sampled logout navigation worked. Direct device and Alarms URLs returned to Login.
-
-**Not covered yet:** A complete rerun of this case with controlled test data.
-
 ### TC-02: Dashboard loading and device link
 
 **Purpose:** Check that the main overview is available and a device can be opened.
@@ -40,8 +35,6 @@ These are proposed browser E2E tests.
 **Scenario:** Open Dashboard, check its main sections and follow a device link.
 
 **Expected:** Summary cards, recent alarms and the chart area load without an error. The link opens the device selected on Dashboard.
-
-**Execution:** Passed in the manual rerun. All four summary cards, Recent alarms and the Live voltage chart loaded without a displayed error. One device link from Recent alarms was opened, and the destination page showed exactly the same device name.
 
 ### TC-03: Device search, filters and pagination
 
@@ -53,10 +46,6 @@ These are proposed browser E2E tests.
 
 **Expected:** Results and order match the test data. Pagination does not lose or repeat records, and filters remain selected. Clearing search and choosing All restores results. Details match the selected row.
 
-**Execution:** Offline returned 2 devices in the observed dataset; All restored the list. Partial-name search and no-match recovery worked. Name descending and the final-page Next boundary were checked.
-
-**Not covered yet:** Location search, combined search and status, other sorting and page-size combinations.
-
 ### TC-04: Events and device links
 
 **Purpose:** Keep events linked to the correct device during investigation. Automate navigation and representative filters; use API tests later for more combinations.
@@ -66,10 +55,6 @@ These are proposed browser E2E tests.
 **Scenario:** Open device View all, filter by type, phase and category, sort by Magnitude and change pages. Open event details and View device, then clear filters after no results.
 
 **Expected:** Device selection, results, order and detail values agree. View device returns the same device. Category and other fields are readable. Clear filters restores results.
-
-**Execution:** Device navigation, Sag and Swell filters, event details and empty-state recovery were sampled. Category = Sustained, Phase = L1 and ITIC = Fail returned no results. Pagination moved from rows 1-15 to 16-30; selecting 25 displayed 25 rows. Magnitude showed a descending sort state.
-
-**Not covered yet:** Numeric Magnitude order, other combinations, return-state behavior and a retest of published [Category clipping](https://github.com/skhomenko/powerside-testing-challenge/issues/18).
 
 ### TC-05: Alarm filters and details
 
@@ -81,10 +66,6 @@ These are proposed browser E2E tests.
 
 **Expected:** Exactly the matching alarms appear. Details match the selected record. Filters remain selected across pages, reset restores results and actions that are not allowed are unavailable.
 
-**Execution:** Critical plus Resolved displayed matching values; All restored results. Sampled handled rows had no enabled Acknowledge or Resolve actions. Details showed expanded state. The sampled Active-filter page contained Active alarms.
-
-**Not covered yet:** Device filtering, pagination correctness, the complete action matrix and whether alarm sorting is supported.
-
 ### TC-06: From and To dates
 
 **Purpose:** Keep daily investigations complete and within the selected dates. Known timestamps make boundary checks repeatable.
@@ -95,20 +76,48 @@ These are proposed browser E2E tests.
 
 **Expected:** From excludes earlier displayed days. To includes the whole selected displayed day and excludes later days. Equal From/To returns that day only. Returning To to the original day keeps that day's records included.
 
-**Execution:** From included records displayed on the previous day. To omitted late-evening records that appeared when To advanced one day and disappeared when it was restored. Both failures were observed on Alarms and Events. A same-day Alarms range returned results.
+## Automated coverage
 
-**Not covered yet:** Complete midnight, timezone and combined-boundary coverage. The exact cutoff and cause remain unknown.
+Smoke is a subset of the automated regression suite covering access, Dashboard
+and the core list pages. Each test has one definition.
+
+| ID | Implemented coverage | Specs |
+| --- | --- | --- |
+| TC-01 | Parameterized empty/username-only/password-only submission prevention; UI login; reload; logout; Back and direct protected navigation. | `smoke/access.cy.js` |
+| TC-02 | Four summary cards, voltage chart and recent alarms; selected Dashboard device name matches the destination. | `smoke/dashboard.cy.js` |
+| TC-03 | Page-load Smoke checks; parameterized name/location searches with and without Status, separate no-match recovery, Name sorting in both directions, forward/back pagination at 5 and 10 rows, page-size reset from page 2, and row navigation. | `smoke/devices.cy.js`, `regression/devices.cy.js` |
+| TC-04 | Page-load Smoke checks including the ITIC chart; parameterized type/phase/category/ITIC/device filter combinations with matching/nonmatching witnesses; separate clear/empty recovery; numeric Magnitude sorting in both directions; filtered forward/back pagination at 10 and 25 rows; page-size reset from page 2; device View all, event details and View device agreement. | `smoke/events.cy.js`, `regression/events.cy.js` |
+| TC-05 | Page-load Smoke checks; parameterized status, status/severity and status/severity/device filters; separate detail/collapse and empty/reset tests; forward/back pagination at 10 and 25 rows against complete discovery; page-size change from page 2 resets to page 1; read-only Active/Acknowledged/Resolved action availability. | `smoke/alarms.cy.js`, `regression/alarms.cy.js` |
+| TC-06 | From alone, To alone with forward/back changes, and equal From/To on both pages. Expectations use unfiltered timestamps and displayed Toronto days, with morning, late-evening and adjacent-day witnesses. | `regression/dates.cy.js` |
+
+All spec paths are relative to `cypress/e2e/`.
+
+### Additional manual coverage
+
+- TC-01: invalid-credential recovery still needs confirmation that a new invalid
+  attempt is safe for the shared account.
+- TC-03: remaining sortable columns and exhaustive filter/page-size combinations.
+- TC-04: return-state behavior, remaining combinations and visual retesting of
+  [Category clipping](https://github.com/skhomenko/powerside-testing-challenge/issues/18).
+  Text agreement alone does not verify that the entire value is visually readable.
+- TC-05: submission and persistence of alarm actions remain outside authorization.
+  The automated suite checks enabled/disabled controls without activating them.
+  Confirm whether Alarms sorting is supported.
+- TC-06: exact midnight instants, daylight-saving transitions, other timezones
+  and the complete browser matrix. Missing boundary witnesses must produce an
+  explicit data blocker.
+- TC-07 through TC-10: keep settings, alarm actions and longer session checks manual.
 
 ## Manual scripted cases
 
 Keep these browser cases manual initially. Saved settings and alarm actions need authorized isolated records and complete cleanup.
 
-| ID | Case | Priority | Groups | Manual result |
-| --- | --- | --- | --- | --- |
-| TC-07 | Device settings | High | Regression | Partly run |
-| TC-08 | Individual Acknowledge and Resolve | High | Regression | Partly run |
-| TC-09 | Bulk acknowledgement | High | Regression | Partly run |
-| TC-10 | Restart, tabs and inactivity | High | Regression | Partly run |
+| ID | Case | Priority | Groups |
+| --- | --- | --- | --- |
+| TC-07 | Device settings | High | Regression |
+| TC-08 | Individual Acknowledge and Resolve | High | Regression |
+| TC-09 | Bulk acknowledgement | High | Regression |
+| TC-10 | Restart, tabs and inactivity | High | Regression |
 
 ### TC-07: Device settings
 
@@ -120,10 +129,6 @@ Keep these browser cases manual initially. Saved settings and alarm actions need
 
 **Expected:** Reset discards unsaved edits. Allowed values remain after reload; invalid values cannot be saved. Name and location agree across pages. Any new alarms match the expected effect of the test values and are cleaned up.
 
-**Execution:** The full edit, reset and save flow was checked, including updated name and location at the top of the device page. All 9 original settings matched after restoration and reload; Save and Reset changes were disabled. Selected validation checks were completed.
-
-**Not covered yet:** Updates in Devices and other pages, complete server validation, concurrent edits and effects on alarms.
-
 ### TC-08: Individual Acknowledge and Resolve
 
 **Purpose:** Change only the intended alarm to an allowed status. Keep manual until status rules and cleanup are established.
@@ -133,10 +138,6 @@ Keep these browser cases manual initially. Saved settings and alarm actions need
 **Scenario:** Perform each allowed action on a separate alarm, reload and compare details, device history and summaries. Check repeated actions where permitted.
 
 **Expected:** Only the intended alarm changes, and related pages agree. Actions that are not allowed are unavailable. Repeated actions follow the agreed rules without applying a change twice.
-
-**Execution:** One alarm was acknowledged and then resolved. Both status changes showed in the UI. After Resolve, its Acknowledge and Resolve buttons were disabled.
-
-**Not covered yet:** Reload, device history and Dashboard counts after the change. Resolve without acknowledging first, and repeated actions.
 
 **Cleanup:** Use an approved reset method, not another irreversible alarm action.
 
@@ -150,10 +151,6 @@ Keep these browser cases manual initially. Saved settings and alarm actions need
 
 **Expected:** Only intended selected alarms that allow acknowledgement change. Handled and unselected records remain unchanged. Clear selection changes no statuses. Feedback and counts match the saved results.
 
-**Execution:** Select all active on page exposed Acknowledge selected and Clear selection; deselection cleared it.
-
-**Not covered yet:** Submission, handling already-acknowledged records, selection after filter or page changes and partial success.
-
 ### TC-10: Restart, tabs and inactivity
 
 **Purpose:** Preserve valid sessions and end access after logout or timeout. Keep the longer timing checks outside Smoke.
@@ -163,10 +160,6 @@ Keep these browser cases manual initially. Saved settings and alarm actions need
 **Scenario:** Restart the browser. Log out in one tab and navigate or reload in another. Try the inactivity warning, Stay signed in and waiting for automatic logout.
 
 **Expected:** A valid session survives restart. Logout or timeout removes protected access. The warning is readable and usable with the keyboard. Stay signed in extends the session for the agreed period.
-
-**Execution:** Restart retained login. The second tab returned to Login on reload after logout. Inactivity showed a warning; Stay signed in extended access, and waiting without extension logged out.
-
-**Not covered yet:** Exact timing, keyboard use and backend revocation. Release notes state a 10-minute timeout and one-minute warning; these timings have not been measured.
 
 ## Exploratory follow-up
 
@@ -201,5 +194,3 @@ In a controlled environment, stub empty, delayed, malformed and failed responses
 **Evidence:** Once request and response contracts are confirmed, record the method, endpoint, status and actual outcome. Exclude credentials, cookies, tokens and sensitive response data.
 
 **Why exploratory first:** Confirm permission and error expectations before automating them.
-
-No security defects found in the checks performed. Backend authorization and session revocation remain unverified.

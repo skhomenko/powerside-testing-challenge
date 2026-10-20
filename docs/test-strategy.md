@@ -16,9 +16,23 @@ Focus on access, reliable monitoring data and finding the right device, event or
 
 Automate TC-01 through TC-06 with JavaScript and Cypress: access, Dashboard loading and navigation, Devices, Events, Alarms and dates. This covers normal workflows as well as known defects. Keep saved settings, alarm actions and longer session checks manual until their data and behavior are dependable.
 
-**Smoke:** TC-01 and TC-02. **Regression:** Smoke plus TC-03 through TC-10 and the exploratory sessions. Each case has one definition and can belong to both groups.
+**Smoke:** TC-01, TC-02 and page availability checks for TC-03 through TC-05. **Regression:** Smoke plus TC-03 through TC-10 and the exploratory sessions. Each case has one definition and can belong to both groups.
 
 Complete the remaining manual checks before implementing the affected automation, or record why they cannot run. Use Smoke for quick feedback while developing Cypress tests, then finish with all implemented tests and the manual results. Record known defects as failures with issue links and missing prerequisites as Blocked. Improvements and unanswered product questions are not assumed requirements.
+
+## Automated scope and limits
+
+The Cypress suite implements TC-01 through TC-06. TC-07 through TC-10 and
+exploratory sessions remain manual. See the [coverage table](test-cases.md#automated-coverage)
+for implemented scenarios and the [README](../README.md#run-the-tests) for
+execution commands and report locations.
+
+The tests are read-only apart from login and logout. A request guard blocks
+other browser writes on the application origin.
+
+Expected totals and records assume backend data stays unchanged between
+discovery and UI requests. Concurrent inserts, alarm resolutions or edits can
+invalidate those comparisons.
 
 ## API candidates
 
