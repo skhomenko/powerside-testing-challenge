@@ -5,6 +5,7 @@ const { parseEnv } = require('node:util');
 const local = fs.existsSync('.env.local') ? parseEnv(fs.readFileSync('.env.local', 'utf8')) : {};
 const settings = { ...local, ...process.env };
 const timezone = 'America/Toronto';
+const { approvedOrigin } = require('./cypress/support/target');
 
 module.exports = defineConfig({
   viewportWidth: 1440,
@@ -22,17 +23,22 @@ module.exports = defineConfig({
   },
   expose: { timezone },
   e2e: {
-    baseUrl: settings.POWERSIDE_BASE_URL || 'https://testapp.andresfloresv.com',
+    baseUrl: approvedOrigin,
     specPattern: 'cypress/e2e/**/*.cy.js',
     supportFile: 'cypress/support/e2e.js',
     testIsolation: true,
     setupNodeEvents(on, config) {
+      let target;
+      try {
+        target = new URL(config.baseUrl);
+      } catch {
+        throw new Error('CONFIGURATION BLOCKER: baseUrl must be a valid URL on the approved application origin.');
+      }
+      if (target.origin !== approvedOrigin || target.username || target.password) {
+        throw new Error(`CONFIGURATION BLOCKER: baseUrl must use the approved origin ${approvedOrigin}, without embedded credentials.`);
+      }
       if (!config.env.username || !config.env.password) {
         throw new Error('CONFIGURATION BLOCKER: set POWERSIDE_USERNAME and POWERSIDE_PASSWORD privately.');
-      }
-      const target = new URL(config.baseUrl);
-      if (target.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(target.hostname)) {
-        throw new Error('CONFIGURATION BLOCKER: credentials require HTTPS, except for localhost.');
       }
       return config;
     },

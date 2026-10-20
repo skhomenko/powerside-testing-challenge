@@ -9,6 +9,7 @@
   "scripts": {
     "cy:open": "node scripts/cypress.js open",
     "test:smoke": "node scripts/cypress.js smoke",
+    "test:api": "node scripts/cypress.js api",
     "test:regression": "node scripts/cypress.js regression",
     "test:spec": "node scripts/cypress.js spec",
     "check": "node scripts/check.js"

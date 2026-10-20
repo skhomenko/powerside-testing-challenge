@@ -6,8 +6,8 @@ Focus on access, reliable monitoring data and finding the right device, event or
 
 | Risk | Coverage | Approach and reason |
 | --- | --- | --- |
-| Login fails or access remains after logout | TC-01, TC-10; access and error exploration | Automate login and logout. Check browser restart and session timing manually first; use API tests to investigate backend authorization. |
-| Dashboard is unavailable or shows misleading data | TC-02; API reconciliation; chart exploration | Smoke checks loading and a device link. Verify counts through API tests once the source data and counting rules are understood. Review chart meaning and updates manually. |
+| Login fails or access remains after logout | TC-01, TC-10, API-01; access and error exploration | Automate login and logout. Check browser restart and session timing manually first; API-01 verifies protected access and client logout. See the [open session observation](test-report.md#session-revocation). |
+| Dashboard is unavailable or shows misleading data | TC-02, API-02; chart exploration | Smoke checks loading and a device link. Reconcile counts against device records and filtered alarm totals. Review chart meaning and updates manually. |
 | Filters, sorting or pagination hide records | TC-03 through TC-06 | Automate common combinations and date boundaries. These are frequent investigation tasks with clear expected results. |
 | Settings or alarm actions affect unintended records | TC-07 through TC-09 | Manual first. Automation needs isolated data and reliable cleanup, including generated alarms. Restoring settings alone may leave side effects. |
 | Controls are confusing, inaccessible or recover poorly from errors | Usability and error exploration | Explore keyboard access, layout, wording, validation and recovery. Automate repeatable findings once expectations are clear. |
@@ -16,36 +16,68 @@ Focus on access, reliable monitoring data and finding the right device, event or
 
 Automate TC-01 through TC-06 with JavaScript and Cypress: access, Dashboard loading and navigation, Devices, Events, Alarms and dates. This covers normal workflows as well as known defects. Keep saved settings, alarm actions and longer session checks manual until their data and behavior are dependable.
 
+API-01 through API-03 add independent access, Dashboard reconciliation and
+representative backend pagination checks to full Regression.
+
 **Smoke:** TC-01, TC-02 and page availability checks for TC-03 through TC-05. **Regression:** Smoke plus TC-03 through TC-10 and the exploratory sessions. Each case has one definition and can belong to both groups.
 
 Complete the remaining manual checks before implementing the affected automation, or record why they cannot run. Use Smoke for quick feedback while developing Cypress tests, then finish with all implemented tests and the manual results. Record known defects as failures with issue links and missing prerequisites as Blocked. Improvements and unanswered product questions are not assumed requirements.
 
 ## Automated scope and limits
 
-The Cypress suite implements TC-01 through TC-06. TC-07 through TC-10 and
-exploratory sessions remain manual. See the [coverage table](test-cases.md#automated-coverage)
+The Cypress suite implements TC-01 through TC-06 and API-01 through API-03.
+TC-07 through TC-10 and exploratory sessions remain manual. See the [coverage table](test-cases.md#automated-coverage)
 for implemented scenarios and the [README](../README.md#run-the-tests) for
 execution commands and report locations.
 
 The tests are read-only apart from login and logout. A request guard blocks
-other browser writes on the application origin.
+other browser writes on the application origin. API requests use a separate
+origin/path/method allowlist because interception does not protect `cy.request()`.
 
 Expected totals and records assume backend data stays unchanged between
 discovery and UI requests. Concurrent inserts, alarm resolutions or edits can
 invalidate those comparisons.
 
-## API candidates
+## API behavior and limits
 
-The endpoints below were observed as resource URLs. Confirm request methods, response schemas, status codes and authentication before writing API tests.
+Observed using the supplied account; no formal API contract was provided:
 
-| Observed endpoints | Proposed coverage | Confirm first |
-| --- | --- | --- |
-| `/api/auth/login`, `/api/auth/me` | Authentication and access after logout or timeout | Session behavior and expected responses |
-| `/api/dashboard/summary`, `/api/devices`, `/api/events` | Dashboard counts against complete device and alarm records | Count definitions, pagination and a consistent data snapshot |
-| `/api/events`, `/api/pq-events`, `/api/pq-events/scatter` | Dates, filter combinations, sorting, pagination and agreement between lists and charts | Timezone rules, parameters and schemas |
-| `/api/devices/:id`, `/api/devices/:id/events` | Saved settings and related alarm history | Returned fields, save requests, permissions and effects on alarms |
+- **Access:** `POST /api/auth/login` issues an HttpOnly, SameSite=Lax session
+  cookie; `GET /api/auth/me` returns `user`. Protected requests without a
+  credential return 401 with only an `error` field.
+- **Logout:** API-01 verifies client access removal. All API specs share
+  assertion-free logout cleanup; cleanup errors preserve an existing failure. See the [session observation](test-report.md#session-revocation) for
+  the unresolved backend expectation.
+- **Counts:** Dashboard alarm totals include only `Active` alarms, excluding
+  `Acknowledged` and `Resolved`. Critical, Warning and Info totals match
+  `activeBySeverity`; zero severity totals are valid. Per-device Active totals
+  match `active_alarms`.
+  Devices out of spec means distinct devices with at least one Active alarm;
+  offline devices have status `Offline`.
+- **Lists:** `/api/events` contains alarms; `/api/pq-events` contains power-quality
+  Events. Alarm status/severity/device filters, device status filtering and name
+  sorting were checked against matching records and pagination totals. Empty lists
+  report one total page.
 
-**Global Alarms uses `/api/events`; power-quality Events uses `/api/pq-events`.** These URLs do not establish how changes are submitted. Use API tests for broader data combinations after verification, while Cypress covers the user workflows.
+Reconciliation compares independent endpoints without downloading alarm history.
+Summary and device reads bracket the comparison. Changed counts allow one fresh
+attempt, then a DATA BLOCKER; stable mismatches fail assertions. Separate
+requests can miss changes that revert or preserve aggregate totals.
+
+Requests are bounded: device discovery allows ten 100-row pages, reconciliation
+covers at most 100 devices, alarm count queries retrieve one record, and device
+status partitions allow 100 rows. Missing matching/nonmatching witnesses,
+exceeded bounds and detected instability are blockers, never silent passes.
+See [API coverage](test-cases.md#api-coverage) for individual scenarios.
+
+Requests neither follow redirects nor retry transport failures. HTTP 5xx and
+transport errors are environment blockers; unexpected statuses, fields and
+stable mismatches require application investigation. Transport diagnostics are
+suppressed; reports retain credential redaction, private permissions and upload
+gating. Full response snapshots are not saved.
+
+See the [test report](test-report.md#automated-verification) for results
+and the security assessment.
 
 ## Automation approach
 

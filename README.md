@@ -1,12 +1,12 @@
 # Powerside testing challenge
 
-Browser tests for [Power Quality Monitor](https://testapp.andresfloresv.com),
+Browser and API tests for [Power Quality Monitor](https://testapp.andresfloresv.com),
 using JavaScript and Cypress.
 
 - [Application inventory](docs/application-inventory.md)
 - [Test strategy](docs/test-strategy.md)
 - [Test suite and coverage](docs/test-cases.md)
-- [Manual test report](docs/manual-test-report.md)
+- [Test report](docs/test-report.md)
 - [Reported findings](https://github.com/skhomenko/powerside-testing-challenge/issues)
 
 ## Setup
@@ -30,12 +30,14 @@ Requires Docker with a running Linux-container daemon and a POSIX shell
 ```sh
 sh scripts/docker.sh build
 sh scripts/docker.sh smoke
+sh scripts/docker.sh api
 sh scripts/docker.sh regression
 sh scripts/docker.sh spec cypress/e2e/regression/alarms.cy.js
 ```
 
 With Make installed, the equivalents are `make build`, `make run-smoke` and
-`make run-regression`. Rebuild after changing tests, configuration or dependencies.
+`make run-regression`; use `make run-api` for API-only coverage.
+Rebuild after changing tests, configuration or dependencies.
 The image pins Node, Cypress and Chrome versions.
 
 ### Local alternative
@@ -61,17 +63,18 @@ npx cypress verify
 These commands are for local runs. For Docker, use the commands in Setup above.
 
 ```sh
+npm run test:api         # API access, counts and device pagination
 npm run test:smoke       # Access and core page availability
-npm run test:regression  # Full suite, including Smoke (TC-01 through TC-06)
+npm run test:regression  # Full browser and API suite, including Smoke
 npm run cy:open          # Interactive runner
 npm run test:spec -- cypress/e2e/regression/alarms.cy.js
 npm run check           # JavaScript syntax checks
 ```
 
-Make shortcuts are also available: `make smoke`, `make regression`,
+Make shortcuts are also available: `make smoke`, `make api`, `make regression`,
 `make open` and `make check`. Run `make help` for all commands.
 
-Tests use Chrome at 1440 x 900 with the `America/Toronto` timezone.
+Tests use Chrome and the `America/Toronto` timezone for displayed-day checks.
 Automated tests are verified in Chrome only. Cross-browser coverage is outside
 the scope of this submission.
 Run tests using the shared account one at a time, including local and CI runs.
@@ -84,13 +87,14 @@ Pushes to `main` also run Smoke. To run full Regression, manually dispatch
 Regression runs after Smoke passes and includes the Smoke specs again.
 
 Live runs require repository secrets `POWERSIDE_USERNAME` and
-`POWERSIDE_PASSWORD`. The optional repository variable `POWERSIDE_BASE_URL`
-overrides the application URL. JUnit and JSON reports are retained for 3 days.
+`POWERSIDE_PASSWORD`. Tests use the fixed application origin
+`https://testapp.andresfloresv.com`. Cypress overrides pointing elsewhere are
+rejected before credentials are sent. JUnit and JSON reports are retained for 3 days.
 
 ## Results and known failures
 
 Headless runs save JUnit XML and `summary.json` under `results/<group>/`
-(`smoke`, `regression` or `spec`), replacing that group's previous reports.
+(`smoke`, `api`, `regression` or `spec`), replacing that group's previous reports.
 A non-passing run returns a nonzero exit code.
 
 The date tests currently reproduce known application defects
@@ -98,3 +102,6 @@ The date tests currently reproduce known application defects
 [#17](https://github.com/skhomenko/powerside-testing-challenge/issues/17).
 Check `summary.json` for failure details. If the tests fail to start, check the
 terminal output.
+
+API scenarios and rationale are documented in [test coverage](docs/test-cases.md#api-coverage);
+verification results and open security observations are in the [test report](docs/test-report.md).
