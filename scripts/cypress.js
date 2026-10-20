@@ -10,8 +10,8 @@ if (Number(process.versions.node.split('.')[0]) !== 24) {
 
 process.env.TZ = 'America/Toronto';
 const [mode = 'regression', ...args] = process.argv.slice(2);
-if (!['open', 'smoke', 'regression', 'spec'].includes(mode) || (mode === 'spec' && args.length !== 1) || (mode !== 'spec' && args.length)) {
-  console.error('Usage: node scripts/cypress.js open|smoke|regression|spec <spec-path>');
+if (!['open', 'smoke', 'api', 'regression', 'spec'].includes(mode) || (mode === 'spec' && args.length !== 1) || (mode !== 'spec' && args.length)) {
+  console.error('Usage: node scripts/cypress.js open|smoke|api|regression|spec <spec-path>');
   process.exit(2);
 }
 process.umask(0o077);
@@ -51,7 +51,7 @@ const cypress = require('cypress');
     e2e: true,
     quiet: true,
     browser: process.env.POWERSIDE_BROWSER || 'chrome',
-    spec: mode === 'smoke' ? 'cypress/e2e/smoke/**/*.cy.js' : mode === 'spec' ? args[0] : undefined,
+    spec: mode === 'smoke' ? 'cypress/e2e/smoke/**/*.cy.js' : mode === 'api' ? 'cypress/e2e/api/**/*.cy.js' : mode === 'spec' ? args[0] : undefined,
     reporter: 'junit',
     reporterOptions: { mochaFile: path.join(directory, 'junit-[hash].xml'), toConsole: false },
   });

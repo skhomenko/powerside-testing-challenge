@@ -1,8 +1,8 @@
 # Test cases
 
 This document defines the regression suite, its Smoke subset, and the manual
-cases and exploratory coverage. Execution records are separate: see the
-[manual test report](manual-test-report.md) and the automated report locations
+cases and exploratory coverage. Findings and verification results are recorded in the
+[test report](test-report.md) and the automated report locations
 in the [README](../README.md#run-the-tests).
 
 ## Browser regression cases
@@ -91,6 +91,24 @@ and the core list pages. Each test has one definition.
 | TC-06 | From alone, To alone with forward/back changes, and equal From/To on both pages. Expectations use unfiltered timestamps and displayed Toronto days, with morning, late-evening and adjacent-day witnesses. | `regression/dates.cy.js` |
 
 All spec paths are relative to `cypress/e2e/`.
+
+### API coverage
+
+| ID | Selected checks and rationale | Specs |
+| --- | --- | --- |
+| API-01 | Parameterized protected-endpoint checks return 401 and no protected fields; valid API login grants access; logout removes client access without an extra cookie-clear command; failed tests attempt logout cleanup. Protects the access boundary independently of UI routing. | `api/auth.cy.js` |
+| API-02 | Reconcile Dashboard total/offline devices, Active alarms, severity breakdown and distinct devices out of spec using device records and filtered per-device/severity alarm totals. Detects misleading overview data without downloading alarm history. | `api/dashboard.cy.js` |
+| API-03 | Separate parameterized Online, Warning and Offline checks compare matching/nonmatching identities and totals with complete discovery; a dedicated pagination test compares two name-sorted pages. Checks API pagination metadata and backend filtering independently of UI rendering. | `api/devices.cy.js` |
+
+All API checks use `cy.request()` without page navigation. Each authenticated
+test starts its own API login. All API specs use shared logout cleanup that
+preserves an existing test failure. API-01 starts with
+no cookies. Specs run independently and are included in full Regression without
+copying definitions. See the [session observation](test-report.md#session-revocation)
+for the unresolved logout expectation. Date boundaries, exhaustive
+filter combinations, writes and role comparisons are outside this API addition.
+See the [test report](test-report.md#automated-verification) for results
+and known failures.
 
 ### Additional manual coverage
 

@@ -38,7 +38,7 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: make check
       - name: Check Make commands
-        run: make --dry-run install open smoke regression spec build run-check run-smoke run-regression run-spec SPEC=cypress/e2e/smoke/dashboard.cy.js
+        run: make --dry-run install open smoke api regression spec build run-check run-smoke run-api run-regression run-spec SPEC=cypress/e2e/smoke/dashboard.cy.js
       - name: Check Dockerfile
         run: docker build --check .
 
@@ -65,7 +65,6 @@ jobs:
       - name: Run Smoke
         id: smoke
         env:
-          POWERSIDE_BASE_URL: ${{ vars.POWERSIDE_BASE_URL || 'https://testapp.andresfloresv.com' }}
           POWERSIDE_USERNAME: ${{ secrets.POWERSIDE_USERNAME }}
           POWERSIDE_PASSWORD: ${{ secrets.POWERSIDE_PASSWORD }}
         run: make run-smoke
@@ -94,7 +93,6 @@ jobs:
       - name: Run full Regression
         id: regression
         env:
-          POWERSIDE_BASE_URL: ${{ vars.POWERSIDE_BASE_URL || 'https://testapp.andresfloresv.com' }}
           POWERSIDE_USERNAME: ${{ secrets.POWERSIDE_USERNAME }}
           POWERSIDE_PASSWORD: ${{ secrets.POWERSIDE_PASSWORD }}
         run: make run-regression

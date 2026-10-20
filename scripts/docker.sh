@@ -4,14 +4,14 @@ cd "$(dirname "$0")/.."
 
 mode=${1:-smoke}
 case "$mode" in
-  build|check|smoke|regression)
+  build|check|smoke|api|regression)
     test "$#" -eq 1 || { printf '%s\n' 'Supply only the command.' >&2; exit 2; }
     ;;
   spec)
     test "$#" -eq 2 && test -n "$2" || { printf '%s\n' 'Supply one spec path.' >&2; exit 2; }
     ;;
   *)
-    printf '%s\n' 'Usage: sh scripts/docker.sh build|check|smoke|regression|spec <spec-path>' >&2
+    printf '%s\n' 'Usage: sh scripts/docker.sh build|check|smoke|api|regression|spec <spec-path>' >&2
     exit 2
     ;;
 esac
@@ -33,7 +33,7 @@ case "$mode" in
   check)
     exec docker run --rm --init --user "$(id -u):$(id -g)" "$image" run check
     ;;
-  smoke|regression)
+  smoke|api|regression)
     set -- run "test:$mode"
     ;;
   spec)
@@ -52,6 +52,6 @@ fi
 exec docker run --rm --init --shm-size=2g \
   --user "$(id -u):$(id -g)" \
   --cap-drop=ALL --security-opt=no-new-privileges \
-  --env POWERSIDE_BASE_URL --env POWERSIDE_USERNAME --env POWERSIDE_PASSWORD \
+  --env POWERSIDE_USERNAME --env POWERSIDE_PASSWORD \
   --mount "type=bind,source=$(pwd)/results,target=/app/results" \
   "$@"
