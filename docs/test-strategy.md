@@ -55,11 +55,22 @@ Centralize the base URL, timezone and data configuration. Supply credentials thr
 
 Use the real backend for Smoke, filters, dates and saved-value checks. Use stubbed responses and synthetic fixtures for empty results, delays, malformed responses and errors after confirming response schemas. These tests check UI recovery, not backend behavior.
 
-Select groups without duplicating specs. Report test IDs, results, failure details and issue links; JUnit output can support future CI. Check screenshots and logs before sharing to exclude credentials and sensitive records.
+Select groups without duplicating specs. Report test IDs, results, failure details and issue links; JUnit output supports CI artifacts. Check screenshots and logs before sharing to exclude credentials and sensitive records.
+
+Local Make commands and the Docker runner wrap the same npm scripts. Hosted
+execution runs credential-free checks first, then Smoke on trusted `main`
+runs. A manually requested full Regression run depends on successful Smoke.
+Live workflows share a concurrency group to protect the shared account.
+See the [README](../README.md#github-actions) for CI configuration and
+[results and known failures](../README.md#results-and-known-failures) for report details.
 
 Select data by relevant properties rather than historical counts, timestamps or device IDs. Settings and alarm tests need authorized isolated records and verified cleanup, including after failures. Check for concurrent edits before restoring settings.
 
 ## Deferred coverage
+
+Automated tests are verified in Chrome only. Once the supported browsers are
+confirmed, extend Smoke coverage to a second browser before expanding the full
+regression suite.
 
 Contract tests are deferred because no API schema has been supplied or verified. Confirm the expected contracts before adding compatibility checks.
 

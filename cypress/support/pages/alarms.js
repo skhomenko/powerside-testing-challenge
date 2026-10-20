@@ -36,12 +36,14 @@ export const alarms = {
       });
     });
   },
-  assertActions(status) {
-    cy.get(this.rows).each($row => {
-      cy.wrap($row).find('[data-cy="ack-button"]').should(status === 'Active' ? 'be.enabled' : 'be.disabled');
-      cy.wrap($row).find('[data-cy="resolve-button"]').should(status === 'Resolved' ? 'be.disabled' : 'be.enabled');
-      cy.wrap($row).find('input[type="checkbox"]').should(status === 'Active' ? 'be.enabled' : 'be.disabled');
-    });
+  assertActions(status, records) {
+    rowsMatch(this.rows, records, 'data-alarm-id');
+    for (const record of records) {
+      const row = `${this.rows}[data-alarm-id="${record.id}"]`;
+      cy.get(row).find('[data-cy="ack-button"]').should(status === 'Active' ? 'be.enabled' : 'be.disabled');
+      cy.get(row).find('[data-cy="resolve-button"]').should(status === 'Resolved' ? 'be.disabled' : 'be.enabled');
+      cy.get(row).find('input[type="checkbox"]').should(status === 'Active' ? 'be.enabled' : 'be.disabled');
+    }
   },
   expand(record) {
     cy.get(`${this.rows}[data-alarm-id="${record.id}"] [data-cy="expand-row"]`).click().should('have.attr', 'aria-expanded', 'true');

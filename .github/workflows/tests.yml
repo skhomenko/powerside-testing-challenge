@@ -1,0 +1,110 @@
+name: Browser tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Test suite
+        required: true
+        default: smoke
+        type: choice
+        options: [smoke, regression]
+
+permissions:
+  contents: read
+
+# All live jobs share one account. Checks on other refs use separate groups.
+concurrency:
+  group: ${{ github.ref == 'refs/heads/main' && 'powerside-live-tests' || format('powerside-checks-{0}', github.ref) }}
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    name: Static checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: make check
+      - name: Check Make commands
+        run: make --dry-run install open smoke regression spec build run-check run-smoke run-regression run-spec SPEC=cypress/e2e/smoke/dashboard.cy.js
+      - name: Check Dockerfile
+        run: docker build --check .
+
+  smoke:
+    name: Smoke
+    needs: checks
+    if: ${{ github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Check credentials
+        env:
+          POWERSIDE_USERNAME: ${{ secrets.POWERSIDE_USERNAME }}
+          POWERSIDE_PASSWORD: ${{ secrets.POWERSIDE_PASSWORD }}
+        run: |
+          if [ -z "$POWERSIDE_USERNAME" ] || [ -z "$POWERSIDE_PASSWORD" ]; then
+            echo '::error::CONFIGURATION BLOCKER: configure POWERSIDE_USERNAME and POWERSIDE_PASSWORD repository secrets.'
+            exit 2
+          fi
+      - run: make build run-check
+      - name: Run Smoke
+        id: smoke
+        env:
+          POWERSIDE_BASE_URL: ${{ vars.POWERSIDE_BASE_URL || 'https://testapp.andresfloresv.com' }}
+          POWERSIDE_USERNAME: ${{ secrets.POWERSIDE_USERNAME }}
+          POWERSIDE_PASSWORD: ${{ secrets.POWERSIDE_PASSWORD }}
+        run: make run-smoke
+      - name: Upload Smoke reports
+        if: ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), steps.smoke.outcome) && hashFiles('results/smoke/reports-ready') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: smoke-reports
+          path: |
+            results/smoke/junit-*.xml
+            results/smoke/summary.json
+          if-no-files-found: warn
+          retention-days: 3
+
+  regression:
+    name: Full Regression
+    needs: [checks, smoke]
+    if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.suite == 'regression' && needs.smoke.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: make build
+      - name: Run full Regression
+        id: regression
+        env:
+          POWERSIDE_BASE_URL: ${{ vars.POWERSIDE_BASE_URL || 'https://testapp.andresfloresv.com' }}
+          POWERSIDE_USERNAME: ${{ secrets.POWERSIDE_USERNAME }}
+          POWERSIDE_PASSWORD: ${{ secrets.POWERSIDE_PASSWORD }}
+        run: make run-regression
+      - name: Upload Regression reports
+        if: ${{ !cancelled() && contains(fromJSON('["success", "failure"]'), steps.regression.outcome) && hashFiles('results/regression/reports-ready') != '' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: regression-reports
+          path: |
+            results/regression/junit-*.xml
+            results/regression/summary.json
+          if-no-files-found: warn
+          retention-days: 3
